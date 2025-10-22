@@ -51,6 +51,26 @@ const Dashboard = () => {
     navigate('/login')
   }
 
+  const handleCreateGenie = async () => {
+    try {
+      const shopDomain = localStorage.getItem('shop_domain')
+      const response = await fetch('/api/genie/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop: shopDomain })
+      })
+
+      const data = await response.json()
+      if (data.exists) {
+        navigate('/genie/view')
+      } else {
+        navigate('/genie/generate')
+      }
+    } catch (error) {
+      console.error('Error checking genie:', error)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -205,8 +225,24 @@ const Dashboard = () => {
                 </thead>
                 <tbody>
                   {orders.map((order) => {
-                    const customer = customers.find(c => c.id === order.customer?.id)
-                    const customerName = customer ? `${customer.first_name} ${customer.last_name}`.trim() : order.customer?.first_name ? `${order.customer.first_name} ${order.customer.last_name}`.trim() : 'Guest'
+                    let customerName = 'Guest'
+                    
+                    if (order.customer) {
+                      // First try to find customer in customers array
+                      const customerDetails = customers.find(c => c.id === order.customer.id)
+                      
+                      if (customerDetails && (customerDetails.first_name || customerDetails.last_name)) {
+                        customerName = `${customerDetails.first_name || ''} ${customerDetails.last_name || ''}`.trim()
+                      } else if (customerDetails && customerDetails.email) {
+                        customerName = customerDetails.email
+                      } else if (order.customer.first_name || order.customer.last_name) {
+                        customerName = `${order.customer.first_name || ''} ${order.customer.last_name || ''}`.trim()
+                      } else if (order.customer.email) {
+                        customerName = order.customer.email
+                      } else {
+                        customerName = `Customer #${order.customer.id}`
+                      }
+                    }
                     const isToday = new Date(order.created_at).toDateString() === new Date().toDateString()
                     const timeStr = new Date(order.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
                     const dateStr = isToday ? `Today at ${timeStr}` : new Date(order.created_at).toLocaleDateString()
@@ -254,6 +290,19 @@ const Dashboard = () => {
               </table>
             </div>
           )}
+          
+          {/* Create Genie Button - Bottom Right */}
+          <div className="flex justify-end mt-6">
+            <button 
+              onClick={handleCreateGenie}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              <span>Create Genie</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
