@@ -16,12 +16,7 @@ A single-folder React.js application that connects to Shopify stores and display
 npm install
 ```
 
-2. Update environment variables in `.env`:
-```
-VITE_SHOPIFY_API_KEY=your_shopify_api_key
-VITE_SHOPIFY_REDIRECT_URI=http://localhost:3000/shopify/callback
-SHOPIFY_API_SECRET=your_shopify_api_secret
-MONGODB_URI=mongodb+srv://yogeshwark2004_db_user:W1KFtpTbosnKjSmJ@cluster0.hoytsxw.mongodb.net/aladdyn?retryWrites=true&w=majority&appName=Cluster0
+
 ```
 
 3. Start the backend server:
