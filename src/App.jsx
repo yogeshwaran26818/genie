@@ -4,6 +4,7 @@ import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
 import GenieGenerate from './pages/GenieGenerate'
 import GenieView from './pages/GenieView'
+import ChatPage from './pages/ChatPage'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/genie/generate" element={<GenieGenerate />} />
         <Route path="/genie/view" element={<GenieView />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Routes>
     </Router>
   )

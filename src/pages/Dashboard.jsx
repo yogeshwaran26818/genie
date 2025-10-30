@@ -52,22 +52,39 @@ const Dashboard = () => {
   }
 
   const handleCreateGenie = async () => {
+    const shopDomain = localStorage.getItem('shop_domain');
+    if (!shopDomain) return;
+    
     try {
-      const shopDomain = localStorage.getItem('shop_domain')
-      const response = await fetch('/api/genie/check', {
+      const response = await fetch('/api/genie/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ shop: shopDomain })
-      })
-
-      const data = await response.json()
-      if (data.exists) {
-        navigate('/genie/view')
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        const genie = result.genie;
+        const popup = window.open('', 'GenieScript', 'width=800,height=600,scrollbars=yes');
+        popup.document.write(`
+          <html>
+            <head><title>Genie Script for ${shopDomain}</title></head>
+            <body style="font-family: monospace; padding: 20px;">
+              <h2>${result.message || 'Genie Script Generated'}</h2>
+              <p><strong>Store:</strong> ${genie.shopify_domain}</p>
+              <p><strong>Script ID:</strong> ${genie.script_id}</p>
+              <textarea style="width: 100%; height: 400px; font-family: monospace;">${genie.script_content}</textarea>
+              <br><br>
+              <button onclick="navigator.clipboard.writeText(document.querySelector('textarea').value)">Copy Script</button>
+            </body>
+          </html>
+        `);
       } else {
-        navigate('/genie/generate')
+        alert(result.error || 'Failed to generate script');
       }
     } catch (error) {
-      console.error('Error checking genie:', error)
+      alert('Failed to generate script');
     }
   }
 

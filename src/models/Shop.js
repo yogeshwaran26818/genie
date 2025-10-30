@@ -9,7 +9,11 @@ const shopSchema = new mongoose.Schema({
   shopify_access_token: {
     type: String,
     required: true
-  }
+  },
+
+
+
+
 }, {
   timestamps: true
 })

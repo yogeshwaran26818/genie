@@ -32,10 +32,7 @@ const GenieView = () => {
     fetchGenie()
   }, [navigate])
 
-  const copyScript = () => {
-    navigator.clipboard.writeText(genie.script_content)
-    alert('Script copied to clipboard!')
-  }
+
 
   if (loading) {
     return (
@@ -59,30 +56,32 @@ const GenieView = () => {
             </button>
           </div>
 
-          <div className="mb-4">
-            <p className="text-sm text-slate-600 mb-2">Script ID: {genie?.script_id}</p>
-            <p className="text-sm text-slate-600">Created: {new Date(genie?.createdAt).toLocaleDateString()}</p>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <h3 className="text-green-800 font-medium mb-2">Script Already Exists</h3>
+            <p className="text-green-700 mb-2">Store: {genie?.shopify_domain}</p>
+            <p className="text-green-700 mb-2">Script ID: {genie?.script_id}</p>
+            <p className="text-green-700">Created: {new Date(genie?.createdAt).toLocaleDateString()}</p>
           </div>
 
           <div className="bg-slate-100 rounded-lg p-4 mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium text-slate-800">Script Code</h3>
-              <button
-                onClick={copyScript}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm"
-              >
-                Copy
-              </button>
-            </div>
-            <pre className="text-sm text-slate-700 overflow-x-auto whitespace-pre-wrap">
-              {genie?.script_content}
+            <h3 className="font-medium text-slate-800 mb-2">Integration Code</h3>
+            <p className="text-sm text-slate-600 mb-2">Use this minimal loader in your Shopify theme:</p>
+            <pre className="text-sm bg-white p-3 rounded border overflow-x-auto">
+{`<script>window.ALADDYN_SHOP = '${genie?.shopify_domain}';</script>
+<script src="http://localhost:3000/loader.js"></script>`}
             </pre>
+            <button
+              onClick={() => navigator.clipboard.writeText(`<script>window.ALADDYN_SHOP = '${genie?.shopify_domain}';</script>\n<script src="http://localhost:3000/loader.js"></script>`)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm mt-2"
+            >
+              Copy Integration Code
+            </button>
           </div>
 
           <div className="text-sm text-slate-600">
-            <p>• This script is unique to your store</p>
-            <p>• Add it to your theme's footer or use a script tag app</p>
-            <p>• The script cannot be regenerated once created</p>
+            <p>• Script already exists and is active</p>
+            <p>• Use the integration code above in your Shopify theme</p>
+            <p>• The chatbot will load automatically for your customers</p>
           </div>
         </div>
       </div>
