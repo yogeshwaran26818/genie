@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .debug {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Chatbot Debug Test</h1>
+
+    <div class="debug">
+        <h3>Debug Information:</h3>
+        <div id="debug-info">
+            <p>Loading script...</p>
+        </div>
+    </div>
+
+    <div class="debug">
+        <h3>Console Logs:</h3>
+        <div id="console-logs"></div>
+    </div>
+
+    <!-- Load the Aladdyn Chatbot -->
+    <script src="aladdyn-genie-external.js"></script>
+    <script>
+        // Debug logging
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('console-logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            console.log(message);
+        }
+
+        // Check if script loaded
+        if (typeof AladdynGenie !== 'undefined') {
+            log('✅ AladdynGenie script loaded successfully', 'success');
+
+            try {
+                // Initialize chatbot
+                AladdynGenie.init({
+                    authMode: 'hybrid',
+                    enableGuestMode: true,
+                    shopDomain: 'testing-aladyyn.myshopify.com',
+                    apiBaseUrl: 'http://localhost:3000/api',
+                    socialProviders: ['google', 'facebook'],
+
+                    onAuthSuccess: function (authData) {
+                        log('✅ Authentication successful: ' + JSON.stringify(authData), 'success');
+                    },
+
+                    onAuthError: function (error) {
+                        log('❌ Authentication failed: ' + error.message, 'error');
+                    }
+                });
+
+                log('✅ Chatbot initialized successfully', 'success');
+
+                // Update debug info
+                document.getElementById('debug-info').innerHTML = `
+                    <div class="success">✅ Script loaded and initialized</div>
+                    <p><strong>Shop Domain:</strong> testing-aladyyn.myshopify.com</p>
+                    <p><strong>API Base URL:</strong> http://localhost:3000/api</p>
+                    <p><strong>Auth Mode:</strong> hybrid</p>
+                    <p><strong>Status:</strong> Ready for testing</p>
+                `;
+
+            } catch (error) {
+                log('❌ Error initializing chatbot: ' + error.message, 'error');
+                document.getElementById('debug-info').innerHTML = `
+                    <div class="error">❌ Initialization failed: ${error.message}</div>
+                `;
+            }
+        } else {
+            log('❌ AladdynGenie script not loaded', 'error');
+            document.getElementById('debug-info').innerHTML = `
+                <div class="error">❌ Script not loaded</div>
+                <p>Check if aladdyn-genie-external.js is accessible</p>
+            `;
+        }
+
+        // Test API connectivity
+        fetch('http://localhost:3000/api/customer-account/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ shop: 'testing-aladyyn.myshopify.com' })
+        })
+            .then(response => response.json())
+            .then(data => {
+                log('✅ API connectivity test passed: ' + JSON.stringify(data), 'success');
+            })
+            .catch(error => {
+                log('❌ API connectivity test failed: ' + error.message, 'error');
+            });
+    </script>
+</body>
+
+</html>

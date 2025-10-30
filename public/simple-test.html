@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chatbot Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .test-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Simple Chatbot Test</h1>
+
+    <div class="test-info">
+        <h3>Test Steps:</h3>
+        <ol>
+            <li>Check if script loads</li>
+            <li>Check if chatbot is created</li>
+            <li>Check if button is clickable</li>
+        </ol>
+    </div>
+
+    <div class="test-info">
+        <h3>Results:</h3>
+        <div id="results">
+            <p>Testing...</p>
+        </div>
+    </div>
+
+    <!-- Load the Aladdyn Chatbot -->
+    <script src="aladdyn-genie-external.js"></script>
+    <script>
+        function updateResults(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultEntry = document.createElement('div');
+            resultEntry.className = type;
+            resultEntry.textContent = message;
+            resultsDiv.appendChild(resultEntry);
+        }
+
+        // Test 1: Check if script loaded
+        if (typeof AladdynGenie !== 'undefined') {
+            updateResults('✅ Script loaded successfully', 'success');
+
+            // Test 2: Initialize chatbot
+            try {
+                AladdynGenie.init({
+                    authMode: 'hybrid',
+                    enableGuestMode: true,
+                    shopDomain: 'testing-aladyyn.myshopify.com',
+                    apiBaseUrl: 'http://localhost:3000/api'
+                });
+
+                updateResults('✅ Chatbot initialized', 'success');
+
+                // Test 3: Check if elements exist
+                setTimeout(() => {
+                    const toggle = document.getElementById('chat-toggle');
+                    const window = document.getElementById('chat-window');
+
+                    if (toggle) {
+                        updateResults('✅ Chat toggle button found', 'success');
+
+                        // Test 4: Check if button is visible
+                        const toggleStyle = window.getComputedStyle(toggle);
+                        if (toggleStyle.display !== 'none') {
+                            updateResults('✅ Chat toggle button is visible', 'success');
+
+                            // Test 5: Add click test
+                            toggle.addEventListener('click', () => {
+                                updateResults('✅ Button click detected!', 'success');
+                            });
+
+                            updateResults('✅ Click listener added', 'success');
+                        } else {
+                            updateResults('❌ Chat toggle button is hidden', 'error');
+                        }
+                    } else {
+                        updateResults('❌ Chat toggle button not found', 'error');
+                    }
+
+                    if (window) {
+                        updateResults('✅ Chat window found', 'success');
+                    } else {
+                        updateResults('❌ Chat window not found', 'error');
+                    }
+                }, 1000);
+
+            } catch (error) {
+                updateResults('❌ Error initializing: ' + error.message, 'error');
+            }
+        } else {
+            updateResults('❌ Script not loaded', 'error');
+        }
+
+        // Test API
+        fetch('http://localhost:3000/api/customer-account/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ shop: 'testing-aladyyn.myshopify.com' })
+        })
+            .then(response => response.json())
+            .then(data => {
+                updateResults('✅ API test passed', 'success');
+            })
+            .catch(error => {
+                updateResults('❌ API test failed: ' + error.message, 'error');
+            });
+    </script>
+</body>
+
+</html>
