@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const genieSchema = new mongoose.Schema({
+const chatbotSchema = new mongoose.Schema({
   shopify_domain: {
     type: String,
     required: true,
@@ -23,4 +23,4 @@ const genieSchema = new mongoose.Schema({
   timestamps: true
 })
 
-export default mongoose.model('Genie', genieSchema)
+export default mongoose.model('Chatbot', chatbotSchema)

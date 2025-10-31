@@ -51,42 +51,7 @@ const Dashboard = () => {
     navigate('/login')
   }
 
-  const handleCreateGenie = async () => {
-    const shopDomain = localStorage.getItem('shop_domain');
-    if (!shopDomain) return;
-    
-    try {
-      const response = await fetch('/api/genie/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shop: shopDomain })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        const genie = result.genie;
-        const popup = window.open('', 'GenieScript', 'width=800,height=600,scrollbars=yes');
-        popup.document.write(`
-          <html>
-            <head><title>Genie Script for ${shopDomain}</title></head>
-            <body style="font-family: monospace; padding: 20px;">
-              <h2>${result.message || 'Genie Script Generated'}</h2>
-              <p><strong>Store:</strong> ${genie.shopify_domain}</p>
-              <p><strong>Script ID:</strong> ${genie.script_id}</p>
-              <textarea style="width: 100%; height: 400px; font-family: monospace;">${genie.script_content}</textarea>
-              <br><br>
-              <button onclick="navigator.clipboard.writeText(document.querySelector('textarea').value)">Copy Script</button>
-            </body>
-          </html>
-        `);
-      } else {
-        alert(result.error || 'Failed to generate script');
-      }
-    } catch (error) {
-      alert('Failed to generate script');
-    }
-  }
+
 
   if (loading) {
     return (
@@ -308,10 +273,10 @@ const Dashboard = () => {
             </div>
           )}
           
-          {/* Create Genie Button - Bottom Right */}
+          {/* Create Genie Button */}
           <div className="flex justify-end mt-6">
             <button 
-              onClick={handleCreateGenie}
+              onClick={() => navigate('/script')}
               className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -320,6 +285,7 @@ const Dashboard = () => {
               <span>Create Genie</span>
             </button>
           </div>
+
         </div>
       </div>
     </div>

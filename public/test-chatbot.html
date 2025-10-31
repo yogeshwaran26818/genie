@@ -41,7 +41,7 @@
     <div class="container">
         <h1>Welcome to Our Store</h1>
         <div class="content">
-            <p>This is a demo page to test the Aladdyn chatbot integration. The chatbot should appear as a purple chat bubble in the bottom-right corner of the page.</p>
+            <p>This is a test page to verify the chatbot functionality. Look for a purple chat button in the bottom-right corner.</p>
             
             <div class="feature">
                 <h3>🛍️ Shop Products</h3>
@@ -50,7 +50,7 @@
             
             <div class="feature">
                 <h3>💬 Chat Support</h3>
-                <p>Need help? Click the chat button in the bottom-right corner to start a conversation with our AI assistant.</p>
+                <p>Click the purple chat button in the bottom-right corner to test the chatbot!</p>
             </div>
             
             <div class="feature">
@@ -59,113 +59,100 @@
             </div>
             
             <div class="feature">
-                <h3>🎯 Personalized Experience</h3>
-                <p>Get product recommendations tailored just for you based on your preferences.</p>
+                <h3>🎯 Test Instructions</h3>
+                <p>1. Look for the purple chat button (💬) in the bottom-right corner<br>
+                2. Click it to open the chat window<br>
+                3. Type a message and press Enter<br>
+                4. You should see your message and a reply</p>
             </div>
         </div>
     </div>
 
-    <!-- Chatbot Script -->
+    <!-- Embedded Chatbot Script -->
     <script>
 (function() {
-  console.log('Aladdyn Genie loaded for testing-aladyyn.myshopify.com');
+  console.log('Chatbot loaded for testing-aladyyn.myshopify.com');
   
-  window.AladdynGenie = {
-    shopDomain: 'testing-aladyyn.myshopify.com',
-    scriptId: 'genie_1761564525933_krnyyswh1',
-    
-    init: function() {
-      this.createChatbot();
-      console.log('Genie chatbot initialized');
-    },
-    
-    createChatbot: function() {
-      const chatWidget = document.createElement('div');
-      chatWidget.id = 'aladdyn-chatbot';
-      chatWidget.innerHTML = `
-        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-          <div id="chat-toggle" style="width: 60px; height: 60px; background: #7c3aed; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            <span style="color: white; font-size: 24px;">💬</span>
-          </div>
-          <div id="chat-window" style="display: none; width: 350px; height: 500px; background: white; border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); position: absolute; bottom: 70px; right: 0;">
-            <div style="padding: 20px; border-bottom: 1px solid #eee; background: #7c3aed; color: white; border-radius: 10px 10px 0 0;">
-              <h3 style="margin: 0; font-size: 16px;">Aladdyn Assistant</h3>
-            </div>
-            <div id="chat-messages" style="height: 350px; overflow-y: auto; padding: 15px;"></div>
-            <div style="padding: 15px; border-top: 1px solid #eee;">
-              <input id="chat-input" type="text" placeholder="Type your message..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
-            </div>
+  const chatWidget = document.createElement('div');
+  chatWidget.innerHTML = `
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+      <div id="chat-toggle-chatbot_1761827358157_elv57o8lk" style="width: 60px; height: 60px; background: #7c3aed; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <span style="color: white; font-size: 24px;">💬</span>
+      </div>
+      <div id="chat-window-chatbot_1761827358157_elv57o8lk" style="display: none; width: 350px; height: 400px; background: white; border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); position: absolute; bottom: 70px; right: 0;">
+        <div style="padding: 15px; border-bottom: 1px solid #eee; background: #7c3aed; color: white; border-radius: 10px 10px 0 0;">
+          <h3 style="margin: 0; font-size: 16px;">Chat Assistant</h3>
+        </div>
+        <div id="chat-messages-chatbot_1761827358157_elv57o8lk" style="height: 250px; overflow-y: auto; padding: 15px;">
+          <div style="background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;">
+            Hello! What can I do for you?
           </div>
         </div>
-      `;
-      
-      document.body.appendChild(chatWidget);
-      this.bindEvents();
-      this.addWelcomeMessage();
-    },
-    
-    bindEvents: function() {
-      const toggle = document.getElementById('chat-toggle');
-      const window = document.getElementById('chat-window');
-      const input = document.getElementById('chat-input');
-      
-      toggle.onclick = () => {
-        window.style.display = window.style.display === 'none' ? 'block' : 'none';
-      };
-      
-      input.onkeypress = (e) => {
-        if (e.key === 'Enter' && input.value.trim()) {
-          this.sendMessage(input.value.trim());
-          input.value = '';
-        }
-      };
-    },
-    
-    addWelcomeMessage: function() {
-      this.addMessage('Hello! How can I help you today?', 'bot');
-    },
-    
-    sendMessage: function(message) {
-      this.addMessage(message, 'user');
-      this.handleChatMessage(message);
-    },
-    
-    handleChatMessage: async function(message) {
-      this.addMessage('Let me help you with that...', 'bot');
-      
-      try {
-        const response = await fetch('http://localhost:3000/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            message: message,
-            shop: this.shopDomain
-          })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          this.addMessage(result.response, 'bot');
-        } else {
-          this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
-        }
-      } catch (error) {
-        this.addMessage('Sorry, I\'m having trouble connecting. Please try again.', 'bot');
-      }
-    },
-    
-    addMessage: function(text, sender) {
-      const messages = document.getElementById('chat-messages');
-      const msg = document.createElement('div');
-      msg.style.cssText = `margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; ${sender === 'user' ? 'background: #7c3aed; color: white; margin-left: auto; text-align: right;' : 'background: #f1f5f9; color: #334155;'}`;
-      msg.textContent = text;
-      messages.appendChild(msg);
-      messages.scrollTop = messages.scrollHeight;
-    }
+        <div style="padding: 15px; border-top: 1px solid #eee;">
+          <input id="chat-input-chatbot_1761827358157_elv57o8lk" type="text" placeholder="Type your message..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(chatWidget);
+  
+  const toggle = document.getElementById('chat-toggle-chatbot_1761827358157_elv57o8lk');
+  const window = document.getElementById('chat-window-chatbot_1761827358157_elv57o8lk');
+  const input = document.getElementById('chat-input-chatbot_1761827358157_elv57o8lk');
+  const messages = document.getElementById('chat-messages-chatbot_1761827358157_elv57o8lk');
+  
+  toggle.onclick = () => {
+    window.style.display = window.style.display === 'none' ? 'block' : 'none';
   };
   
-  window.AladdynGenie.init();
+  input.onkeypress = (e) => {
+    if (e.key === 'Enter' && input.value.trim()) {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'background: #7c3aed; color: white; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%; margin-left: auto; text-align: right;';
+      msg.textContent = input.value;
+      messages.appendChild(msg);
+      
+      // Show typing indicator
+      const typing = document.createElement('div');
+      typing.style.cssText = 'background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;';
+      typing.innerHTML = 'Bot is typing<span style="animation: dots 1.5s infinite;">...</span><style>@keyframes dots { 0%, 20% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: 0; } }</style>';
+      messages.appendChild(typing);
+      messages.scrollTop = messages.scrollHeight;
+      
+      // Send to API
+      fetch('http://localhost:3000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input.value, shop: 'testing-aladyyn.myshopify.com' })
+      })
+      .then(r => r.json())
+      .then(data => {
+        messages.removeChild(typing);
+        const reply = document.createElement('div');
+        reply.style.cssText = 'background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;';
+        
+        if (data.requiresAuth) {
+          reply.innerHTML = data.response + '<br><button onclick="window.open(\'' + data.loginUrl + '\', \'_blank\')" style="background: #7c3aed; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 8px;">Sign In</button>';
+        } else {
+          reply.textContent = data.response || 'Sorry, I couldn\'t process that.';
+        }
+        
+        messages.appendChild(reply);
+        messages.scrollTop = messages.scrollHeight;
+      })
+      .catch(() => {
+        messages.removeChild(typing);
+        const reply = document.createElement('div');
+        reply.style.cssText = 'background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;';
+        reply.textContent = 'Sorry, I\'m having trouble connecting.';
+        messages.appendChild(reply);
+        messages.scrollTop = messages.scrollHeight;
+      });
+      
+      input.value = '';
+    }
+  };
 })();
     </script>
 </body>
