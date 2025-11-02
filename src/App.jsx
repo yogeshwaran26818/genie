@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import Dashboard from './pages/Dashboard'
-import ScriptPage from './pages/ScriptPage'
+import ChatPage from './pages/ChatPage'
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/shopify/callback" element={<AuthCallback />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/script" element={<ScriptPage />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Routes>
     </Router>
   )

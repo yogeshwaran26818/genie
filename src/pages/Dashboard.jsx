@@ -208,11 +208,11 @@ const Dashboard = () => {
                 <tbody>
                   {orders.map((order) => {
                     let customerName = 'Guest'
-                    
+
                     if (order.customer) {
                       // First try to find customer in customers array
                       const customerDetails = customers.find(c => c.id === order.customer.id)
-                      
+
                       if (customerDetails && (customerDetails.first_name || customerDetails.last_name)) {
                         customerName = `${customerDetails.first_name || ''} ${customerDetails.last_name || ''}`.trim()
                       } else if (customerDetails && customerDetails.email) {
@@ -228,7 +228,7 @@ const Dashboard = () => {
                     const isToday = new Date(order.created_at).toDateString() === new Date().toDateString()
                     const timeStr = new Date(order.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
                     const dateStr = isToday ? `Today at ${timeStr}` : new Date(order.created_at).toLocaleDateString()
-                    
+
                     return (
                       <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="py-3 px-4">
@@ -238,31 +238,29 @@ const Dashboard = () => {
                         <td className="py-3 px-4 text-sm">{customerName}</td>
                         <td className="py-3 px-4 font-medium">${order.total_price}</td>
                         <td className="py-3 px-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            order.financial_status === 'paid' ? 'bg-green-100 text-green-800' :
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.financial_status === 'paid' ? 'bg-green-100 text-green-800' :
                             order.financial_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
+                              'bg-red-100 text-red-800'
+                            }`}>
                             {order.financial_status?.charAt(0).toUpperCase() + order.financial_status?.slice(1) || 'Unknown'}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-sm">{order.line_items?.length || 0} item{order.line_items?.length !== 1 ? 's' : ''}</td>
                         <td className="py-3 px-4 text-sm text-slate-500">
                           {order.fulfillment_status ? (
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              order.fulfillment_status === 'fulfilled' ? 'bg-green-100 text-green-800' :
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.fulfillment_status === 'fulfilled' ? 'bg-green-100 text-green-800' :
                               order.fulfillment_status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-slate-100 text-slate-800'
-                            }`}>
+                                'bg-slate-100 text-slate-800'
+                              }`}>
                               {order.fulfillment_status.charAt(0).toUpperCase() + order.fulfillment_status.slice(1)}
                             </span>
                           ) : '—'}
                         </td>
                         <td className="py-3 px-4 text-sm">
-                          {order.shipping_lines && order.shipping_lines.length > 0 ? 
-                            order.shipping_lines[0].title : 
-                            order.line_items?.some(item => item.requires_shipping === false) ? 
-                            'Shipping not required' : 'Shipping'
+                          {order.shipping_lines && order.shipping_lines.length > 0 ?
+                            order.shipping_lines[0].title :
+                            order.line_items?.some(item => item.requires_shipping === false) ?
+                              'Shipping not required' : 'Shipping'
                           }
                         </td>
                       </tr>
@@ -272,17 +270,17 @@ const Dashboard = () => {
               </table>
             </div>
           )}
-          
-          {/* Create Genie Button */}
-          <div className="flex justify-end mt-6">
-            <button 
-              onClick={() => navigate('/script')}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
+
+          {/* Chat with Genie Button */}
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => navigate('/chat')}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
               </svg>
-              <span>Create Genie</span>
+              <span>Chat with Genie</span>
             </button>
           </div>
 

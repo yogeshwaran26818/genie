@@ -10,10 +10,15 @@ const shopSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-
-
-
-
+  storefront_access_token: {
+    type: String
+  },
+  customer_account_client_id: {
+    type: String
+  },
+  customer_account_client_secret: {
+    type: String
+  }
 }, {
   timestamps: true
 })
