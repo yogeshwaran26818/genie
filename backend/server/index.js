@@ -4,9 +4,9 @@ import dotenv from 'dotenv'
 import mongoose from 'mongoose'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import Shop from '../src/models/Shop.js'
-import Chatbot from '../src/models/Chatbot.js'
-import CustomerAuth from '../src/models/CustomerAuth.js'
+import Shop from '../models/Shop.js'
+import Chatbot from '../models/Chatbot.js'
+import CustomerAuth from '../models/CustomerAuth.js'
 
 
 
@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename)
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3001
 
 // Middleware
 app.use(cors())
@@ -1626,13 +1626,7 @@ app.use((req, res) => {
   }
 })
 
-// Export for Vercel serverless functions
-export default app
-
-// For local development, start the server
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-  })
-}
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
 
