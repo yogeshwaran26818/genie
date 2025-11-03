@@ -16,7 +16,7 @@
       "dest": "/server/index.js"
     },
     {
-      "src": "/storefront-chatbot.js",
+      "src": "/chatbot-widget.js",
       "dest": "/server/index.js"
     },
     {

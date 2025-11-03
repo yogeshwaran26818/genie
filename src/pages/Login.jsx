@@ -17,7 +17,7 @@ const Login = () => {
     // Clean domain (remove .myshopify.com if present)
     const cleanDomain = storeDomain.replace('.myshopify.com', '')
     const fullDomain = `${cleanDomain}.myshopify.com`
-    
+
     // Generate state for security
     const state = Math.random().toString(36).substring(7)
     localStorage.setItem('oauth_state', state)
@@ -25,7 +25,7 @@ const Login = () => {
     // Shopify OAuth URL
     const shopifyAuthUrl = `https://${fullDomain}/admin/oauth/authorize?` +
       `client_id=${import.meta.env.VITE_SHOPIFY_API_KEY}&` +
-      `scope=read_customers,read_inventory,read_orders,read_products,write_script_tags&` +
+      `scope=read_customers,read_inventory,read_orders,read_products,write_script_tags,read_script_tags,write_storefront_access_tokens&` +
       `redirect_uri=${encodeURIComponent(import.meta.env.VITE_SHOPIFY_REDIRECT_URI)}&` +
       `state=${state}`
 
@@ -45,8 +45,8 @@ const Login = () => {
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3.5 5.5h17v13h-17z"/>
-                  <path d="M3 4h18v16H3z" fill="none" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M3.5 5.5h17v13h-17z" />
+                  <path d="M3 4h18v16H3z" fill="none" stroke="currentColor" strokeWidth="2" />
                 </svg>
               </div>
               <h2 className="text-xl font-semibold text-slate-800 mb-2">
@@ -62,7 +62,7 @@ const Login = () => {
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M15.8 2.1c-.8-.1-1.4.6-1.4 1.4v.2c0 .1 0 .2-.1.2-.4.2-.8.5-1.1.8-.3.3-.5.7-.6 1.1 0 .1-.1.1-.2.1h-.2c-.8 0-1.5.6-1.4 1.4l.8 11.1c.1.8.8 1.4 1.6 1.4h7.2c.8 0 1.5-.6 1.6-1.4l.8-11.1c.1-.8-.6-1.4-1.4-1.4h-.2c-.1 0-.2 0-.2-.1-.1-.4-.3-.8-.6-1.1-.3-.3-.7-.6-1.1-.8-.1 0-.1-.1-.1-.2v-.2c0-.8-.6-1.5-1.4-1.4zm-1.4 3.4c0-.1.1-.2.2-.2h2.8c.1 0 .2.1.2.2v.8c0 .1-.1.2-.2.2h-2.8c-.1 0-.2-.1-.2-.2v-.8z"/>
+                <path d="M15.8 2.1c-.8-.1-1.4.6-1.4 1.4v.2c0 .1 0 .2-.1.2-.4.2-.8.5-1.1.8-.3.3-.5.7-.6 1.1 0 .1-.1.1-.2.1h-.2c-.8 0-1.5.6-1.4 1.4l.8 11.1c.1.8.8 1.4 1.6 1.4h7.2c.8 0 1.5-.6 1.6-1.4l.8-11.1c.1-.8-.6-1.4-1.4-1.4h-.2c-.1 0-.2 0-.2-.1-.1-.4-.3-.8-.6-1.1-.3-.3-.7-.6-1.1-.8-.1 0-.1-.1-.1-.2v-.2c0-.8-.6-1.5-1.4-1.4zm-1.4 3.4c0-.1.1-.2.2-.2h2.8c.1 0 .2.1.2.2v.8c0 .1-.1.2-.2.2h-2.8c-.1 0-.2-.1-.2-.2v-.8z" />
               </svg>
               <span>Connect to Shopify</span>
             </button>
