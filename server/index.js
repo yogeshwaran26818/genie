@@ -5,7 +5,8 @@ import mongoose from 'mongoose'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import Shop from '../src/models/Shop.js'
-import Customer from '../src/models/Customer.js'
+import Chatbot from '../src/models/Chatbot.js'
+import CustomerAuth from '../src/models/CustomerAuth.js'
 
 
 
