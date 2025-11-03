@@ -74,6 +74,7 @@ const fetchProducts = async (shop, accessToken) => {
             id
             title
             vendor
+            status
             featuredImage {
               url
             }
@@ -82,9 +83,12 @@ const fetchProducts = async (shop, accessToken) => {
                 node {
                   id
                   price
+                  inventoryQuantity
+                  inventoryPolicy
                 }
               }
             }
+            totalInventory
           }
         }
       }
@@ -114,10 +118,14 @@ const fetchProducts = async (shop, accessToken) => {
     id: edge.node.id,
     title: edge.node.title,
     vendor: edge.node.vendor,
+    status: edge.node.status,
+    totalInventory: edge.node.totalInventory,
     image: edge.node.featuredImage ? { src: edge.node.featuredImage.url } : null,
     variants: edge.node.variants.edges.map(variantEdge => ({
       id: variantEdge.node.id,
-      price: variantEdge.node.price
+      price: variantEdge.node.price,
+      inventoryQuantity: variantEdge.node.inventoryQuantity,
+      inventoryPolicy: variantEdge.node.inventoryPolicy
     }))
   }))
 
@@ -197,12 +205,44 @@ app.get('/api/auth', async (req, res) => {
     )
     console.log('Shop saved successfully')
 
+    // Create storefront chatbot script tag
+    try {
+      const scriptTagPayload = {
+        script_tag: {
+          event: 'onload',
+          src: `${process.env.APP_URL || 'http://localhost:3000'}/storefront-chatbot.js?shop=${shop}`,
+          display_scope: 'online_store'
+        }
+      }
+
+      const scriptResponse = await fetch(`https://${shop}/admin/api/2025-07/script_tags.json`, {
+        method: 'POST',
+        headers: {
+          'X-Shopify-Access-Token': tokenData.access_token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(scriptTagPayload)
+      })
+
+      if (scriptResponse.ok) {
+        const scriptData = await scriptResponse.json()
+        console.log('Storefront chatbot script tag created:', scriptData.script_tag.id)
+        console.log('✅ Chatbot added to store:', shop)
+      } else {
+        const errorData = await scriptResponse.text()
+        console.log('❌ Failed to add chatbot to store:', shop)
+        console.log('Script tag error:', errorData)
+      }
+    } catch (scriptError) {
+      console.error('Failed to create script tag:', scriptError)
+    }
+
     console.log('Redirecting to frontend...')
-    res.redirect(`http://localhost:${PORT}/shopify/callback?shop=${shop}&success=true`)
+    res.redirect(`${process.env.APP_URL || 'http://localhost:3000'}/shopify/callback?shop=${shop}&success=true`)
   } catch (error) {
     console.error('Auth error:', error)
     const errorMessage = encodeURIComponent(error.message)
-    res.redirect(`http://localhost:${PORT}/shopify/callback?error=${errorMessage}`)
+    res.redirect(`${process.env.APP_URL || 'http://localhost:3000'}/shopify/callback?error=${errorMessage}`)
   }
 })
 
@@ -909,6 +949,105 @@ app.post('/api/store-customer-auth', async (req, res) => {
 })
 
 
+
+
+
+// Serve storefront chatbot script
+app.get('/storefront-chatbot.js', async (req, res) => {
+  const { shop } = req.query
+  
+  if (!shop) {
+    return res.status(400).send('// Shop parameter required')
+  }
+
+  const script = `
+(function() {
+  console.log('Storefront chatbot loaded for ${shop}');
+  
+  const chatWidget = document.createElement('div');
+  chatWidget.innerHTML = \`
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+      <div id="storefront-chat-toggle" style="width: 60px; height: 60px; background: #7c3aed; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <span style="color: white; font-size: 24px;">💬</span>
+      </div>
+      <div id="storefront-chat-window" style="display: none; width: 350px; height: 400px; background: white; border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); position: absolute; bottom: 70px; right: 0;">
+        <div style="padding: 15px; border-bottom: 1px solid #eee; background: #7c3aed; color: white; border-radius: 10px 10px 0 0;">
+          <h3 style="margin: 0; font-size: 16px;">Chat Assistant</h3>
+        </div>
+        <div id="storefront-chat-messages" style="height: 250px; overflow-y: auto; padding: 15px;">
+          <div style="background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;">
+            Hello! How can I help you today?
+          </div>
+        </div>
+        <div style="padding: 15px; border-top: 1px solid #eee;">
+          <input id="storefront-chat-input" type="text" placeholder="Type your message..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; outline: none;">
+        </div>
+      </div>
+    </div>
+  \`;
+  
+  document.body.appendChild(chatWidget);
+  
+  const toggle = document.getElementById('storefront-chat-toggle');
+  const window = document.getElementById('storefront-chat-window');
+  const input = document.getElementById('storefront-chat-input');
+  const messages = document.getElementById('storefront-chat-messages');
+  
+  toggle.onclick = () => {
+    window.style.display = window.style.display === 'none' ? 'block' : 'none';
+  };
+  
+  input.onkeypress = (e) => {
+    if (e.key === 'Enter' && input.value.trim()) {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'background: #7c3aed; color: white; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%; margin-left: auto; text-align: right;';
+      msg.textContent = input.value;
+      messages.appendChild(msg);
+      
+      const typing = document.createElement('div');
+      typing.style.cssText = 'background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;';
+      typing.innerHTML = 'Bot is typing<span style="animation: dots 1.5s infinite;">...</span><style>@keyframes dots { 0%, 20% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: 0; } }</style>';
+      messages.appendChild(typing);
+      messages.scrollTop = messages.scrollHeight;
+      
+      fetch('${process.env.APP_URL || 'http://localhost:3000'}/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input.value, shop: '${shop}' })
+      })
+      .then(r => r.json())
+      .then(data => {
+        messages.removeChild(typing);
+        const reply = document.createElement('div');
+        reply.style.cssText = 'background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;';
+        
+        if (data.requiresAuth) {
+          reply.innerHTML = data.response + '<br><button onclick="window.open(\'' + data.loginUrl + '\', \'_blank\')" style="background: #7c3aed; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 8px;">Sign In</button>';
+        } else {
+          reply.textContent = data.response || 'Sorry, I couldn\'t process that.';
+        }
+        
+        messages.appendChild(reply);
+        messages.scrollTop = messages.scrollHeight;
+      })
+      .catch(() => {
+        messages.removeChild(typing);
+        const reply = document.createElement('div');
+        reply.style.cssText = 'background: #f1f5f9; color: #334155; padding: 8px 12px; border-radius: 15px; margin-bottom: 10px; max-width: 80%;';
+        reply.textContent = 'Sorry, I\'m having trouble connecting.';
+        messages.appendChild(reply);
+        messages.scrollTop = messages.scrollHeight;
+      });
+      
+      input.value = '';
+    }
+  };
+})();
+  `
+
+  res.setHeader('Content-Type', 'application/javascript')
+  res.send(script)
+})
 
 // Error handling middleware
 app.use((err, req, res, next) => {

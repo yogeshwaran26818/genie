@@ -53,6 +53,8 @@ const Dashboard = () => {
 
 
 
+
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -142,40 +144,80 @@ const Dashboard = () => {
               <p className="text-slate-600">No products found in your store</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <div key={product.id} className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="aspect-square bg-slate-100 rounded-lg mb-4 overflow-hidden">
-                    {product.image ? (
-                      <img
-                        src={product.image.src}
-                        alt={product.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <svg className="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="font-medium text-slate-800 mb-2 line-clamp-2">
-                    {product.title}
-                  </h3>
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-green-600">
-                      ${product.variants?.[0]?.price || '0.00'}
-                    </span>
-                    <span className="text-sm text-slate-500">
-                      {product.variants?.length || 0} variant{product.variants?.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  {product.vendor && (
-                    <p className="text-sm text-slate-500 mt-2">by {product.vendor}</p>
-                  )}
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Product</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Status</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Inventory</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Price</th>
+                    <th className="text-left py-3 px-4 font-medium text-slate-700">Vendor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => {
+                    const getInventoryText = () => {
+                      if (product.totalInventory === null) return 'Inventory not tracked'
+                      if (product.totalInventory === 0) return '0 in stock'
+                      if (product.variants?.length > 1) {
+                        return `${product.totalInventory} in stock for ${product.variants.length} variants`
+                      }
+                      return `${product.totalInventory} in stock`
+                    }
+
+                    const getStatusColor = () => {
+                      switch (product.status?.toLowerCase()) {
+                        case 'active': return 'bg-green-100 text-green-800'
+                        case 'draft': return 'bg-yellow-100 text-yellow-800'
+                        case 'archived': return 'bg-gray-100 text-gray-800'
+                        default: return 'bg-slate-100 text-slate-800'
+                      }
+                    }
+
+                    return (
+                      <tr key={product.id} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+                              {product.image ? (
+                                <img
+                                  src={product.image.src}
+                                  alt={product.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium text-slate-800">{product.title}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor()}`}>
+                            {product.status || 'Unknown'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-slate-600">
+                          {getInventoryText()}
+                        </td>
+                        <td className="py-3 px-4 font-medium text-green-600">
+                          ${product.variants?.[0]?.price || '0.00'}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-slate-600">
+                          {product.vendor || '—'}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -271,16 +313,16 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Chat with Genie Button */}
+          {/* Create Genie Button */}
           <div className="flex justify-center mt-8">
             <button
-              onClick={() => navigate('/chat')}
+              onClick={() => navigate('/script')}
               className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
-              <span>Chat with Genie</span>
+              <span>Create Genie</span>
             </button>
           </div>
 

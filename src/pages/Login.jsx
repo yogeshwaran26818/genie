@@ -25,7 +25,7 @@ const Login = () => {
     // Shopify OAuth URL
     const shopifyAuthUrl = `https://${fullDomain}/admin/oauth/authorize?` +
       `client_id=${import.meta.env.VITE_SHOPIFY_API_KEY}&` +
-      `scope=read_customers,read_inventory,read_orders,read_products&` +
+      `scope=read_customers,read_inventory,read_orders,read_products,write_script_tags&` +
       `redirect_uri=${encodeURIComponent(import.meta.env.VITE_SHOPIFY_REDIRECT_URI)}&` +
       `state=${state}`
 
