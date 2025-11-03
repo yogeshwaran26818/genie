@@ -64,7 +64,7 @@ async function ensureDBConnection() {
   if (cached.conn) {
     return cached.conn
   }
-  
+
   if (!dbConnectionPromise) {
     dbConnectionPromise = connectDB().then(conn => {
       dbConnected = true
@@ -76,7 +76,7 @@ async function ensureDBConnection() {
       throw error
     })
   }
-  
+
   return dbConnectionPromise
 }
 
@@ -238,7 +238,7 @@ app.get('/api/auth', async (req, res) => {
   try {
     console.log('=== Auth request received ===')
     console.log('Query params:', req.query)
-    
+
     // Check environment variables
     const envCheck = {
       hasMongoUri: !!process.env.MONGODB_URI,
@@ -246,24 +246,24 @@ app.get('/api/auth', async (req, res) => {
       hasApiSecret: !!process.env.SHOPIFY_API_SECRET
     }
     console.log('Environment check:', envCheck)
-    
+
     // Check if required env vars are missing
     if (!envCheck.hasMongoUri) {
       console.error('❌ MONGODB_URI is missing!')
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Configuration error',
-        message: 'MONGODB_URI environment variable is not set' 
+        message: 'MONGODB_URI environment variable is not set'
       })
     }
-    
+
     if (!envCheck.hasApiKey || !envCheck.hasApiSecret) {
       console.error('❌ Shopify API credentials are missing!')
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Configuration error',
-        message: 'Shopify API credentials are not set' 
+        message: 'Shopify API credentials are not set'
       })
     }
-    
+
     // Ensure MongoDB connection
     try {
       await ensureDBConnection()
@@ -271,7 +271,7 @@ app.get('/api/auth', async (req, res) => {
     } catch (dbError) {
       console.error('❌ MongoDB connection failed:', dbError.message)
       console.error('Error details:', dbError)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Database connection failed',
         message: dbError.message,
         stack: process.env.NODE_ENV === 'development' ? dbError.stack : undefined
@@ -1727,9 +1727,22 @@ if (process.env.NODE_ENV !== 'production') {
   })
 }
 
-// Export app for Vercel serverless functions
-// Vercel will wrap Express app automatically
-export default app
+// Export handler for Vercel serverless functions
+// For Vercel, we need to export a handler function
+const handler = async (req, res) => {
+  // Ensure DB connection before handling
+  try {
+    await ensureDBConnection()
+  } catch (error) {
+    console.error('Initial DB connection error:', error)
+    // Continue anyway - connection will be retried in route handlers
+  }
+
+  // Delegate to Express app
+  return app(req, res)
+}
+
+export default handler
 
 // For local development, start the server
 if (process.env.NODE_ENV !== 'production') {
