@@ -55,8 +55,22 @@ async function connectDB() {
   return cached.conn
 }
 
-// Connect to MongoDB
-connectDB().catch(err => console.error('MongoDB connection error:', err))
+// Connect to MongoDB - ensure connection before handling requests
+// For serverless, we connect on first request
+let dbConnected = false
+
+async function ensureDBConnection() {
+  if (!dbConnected) {
+    try {
+      await connectDB()
+      dbConnected = true
+    } catch (error) {
+      console.error('MongoDB connection error:', error)
+      throw error
+    }
+  }
+  return cached.conn
+}
 
 // Exchange authorization code for access token
 const exchangeCodeForToken = async (code, shop) => {
@@ -214,7 +228,26 @@ app.get('/api/test', (req, res) => {
 // Routes
 app.get('/api/auth', async (req, res) => {
   try {
-    console.log('Auth request received:', req.query)
+    console.log('=== Auth request received ===')
+    console.log('Query params:', req.query)
+    console.log('Environment check:', {
+      hasMongoUri: !!process.env.MONGODB_URI,
+      hasApiKey: !!process.env.VITE_SHOPIFY_API_KEY,
+      hasApiSecret: !!process.env.SHOPIFY_API_SECRET
+    })
+    
+    // Ensure MongoDB connection
+    try {
+      await ensureDBConnection()
+      console.log('✅ MongoDB connection established')
+    } catch (dbError) {
+      console.error('❌ MongoDB connection failed:', dbError.message)
+      return res.status(500).json({ 
+        error: 'Database connection failed',
+        message: dbError.message 
+      })
+    }
+    
     const { code, shop, state } = req.query
 
     if (!code || !shop || !state) {
@@ -223,19 +256,37 @@ app.get('/api/auth', async (req, res) => {
     }
 
     console.log('Exchanging code for token...')
-    const tokenData = await exchangeCodeForToken(code, shop)
-    console.log('Token received successfully')
+    let tokenData
+    try {
+      tokenData = await exchangeCodeForToken(code, shop)
+      console.log('✅ Token received successfully')
+    } catch (tokenError) {
+      console.error('❌ Token exchange failed:', tokenError.message)
+      return res.status(500).json({ 
+        error: 'Token exchange failed',
+        message: tokenError.message 
+      })
+    }
 
     console.log('Saving to MongoDB...')
-    const shopRecord = await Shop.findOneAndUpdate(
-      { shopify_domain: shop },
-      {
-        shopify_domain: shop,
-        shopify_access_token: tokenData.access_token
-      },
-      { upsert: true, new: true }
-    )
-    console.log('Shop saved successfully')
+    let shopRecord
+    try {
+      shopRecord = await Shop.findOneAndUpdate(
+        { shopify_domain: shop },
+        {
+          shopify_domain: shop,
+          shopify_access_token: tokenData.access_token
+        },
+        { upsert: true, new: true }
+      )
+      console.log('✅ Shop saved successfully')
+    } catch (dbSaveError) {
+      console.error('❌ Database save failed:', dbSaveError.message)
+      return res.status(500).json({ 
+        error: 'Failed to save shop data',
+        message: dbSaveError.message 
+      })
+    }
 
     // Automatically create Storefront access token after app installation
     console.log('Creating Storefront access token...')
@@ -371,11 +422,18 @@ app.get('/api/auth', async (req, res) => {
     }
 
     console.log('Redirecting to frontend...')
-    res.redirect(`${process.env.APP_URL || 'http://localhost:3000'}/shopify/callback?shop=${shop}&success=true`)
+    const appUrl = process.env.APP_URL || 'http://localhost:3000'
+    // Remove trailing slash if present
+    const baseUrl = appUrl.replace(/\/$/, '')
+    res.redirect(`${baseUrl}/shopify/callback?shop=${shop}&success=true`)
   } catch (error) {
-    console.error('Auth error:', error)
+    console.error('❌ Auth error:', error)
+    console.error('Error stack:', error.stack)
     const errorMessage = encodeURIComponent(error.message)
-    res.redirect(`${process.env.APP_URL || 'http://localhost:3000'}/shopify/callback?error=${errorMessage}`)
+    const appUrl = process.env.APP_URL || 'http://localhost:3000'
+    // Remove trailing slash if present
+    const baseUrl = appUrl.replace(/\/$/, '')
+    res.redirect(`${baseUrl}/shopify/callback?error=${errorMessage}`)
   }
 })
 
