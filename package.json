@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "start": "npm run build && node server/index.js",
     "server": "node server/index.js",
-    "dev:server": "nodemon server/index.js"
+    "dev:server": "nodemon server/index.js",
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "cors": "^2.8.5",

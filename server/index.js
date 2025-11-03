@@ -17,6 +17,17 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3000
 
+// For Vercel deployment
+if (process.env.NODE_ENV === 'production') {
+  // Vercel handles routing, so we export the app
+  module.exports = app
+} else {
+  // Local development
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+  })
+}
+
 // Middleware
 app.use(cors())
 app.use(express.json())
@@ -1067,6 +1078,3 @@ app.use((req, res) => {
   }
 })
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
