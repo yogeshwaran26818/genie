@@ -58,18 +58,26 @@ async function connectDB() {
 // Connect to MongoDB - ensure connection before handling requests
 // For serverless, we connect on first request
 let dbConnected = false
+let dbConnectionPromise = null
 
 async function ensureDBConnection() {
-  if (!dbConnected) {
-    try {
-      await connectDB()
+  if (cached.conn) {
+    return cached.conn
+  }
+  
+  if (!dbConnectionPromise) {
+    dbConnectionPromise = connectDB().then(conn => {
       dbConnected = true
-    } catch (error) {
+      return conn
+    }).catch(error => {
+      dbConnectionPromise = null
+      dbConnected = false
       console.error('MongoDB connection error:', error)
       throw error
-    }
+    })
   }
-  return cached.conn
+  
+  return dbConnectionPromise
 }
 
 // Exchange authorization code for access token
@@ -230,11 +238,31 @@ app.get('/api/auth', async (req, res) => {
   try {
     console.log('=== Auth request received ===')
     console.log('Query params:', req.query)
-    console.log('Environment check:', {
+    
+    // Check environment variables
+    const envCheck = {
       hasMongoUri: !!process.env.MONGODB_URI,
       hasApiKey: !!process.env.VITE_SHOPIFY_API_KEY,
       hasApiSecret: !!process.env.SHOPIFY_API_SECRET
-    })
+    }
+    console.log('Environment check:', envCheck)
+    
+    // Check if required env vars are missing
+    if (!envCheck.hasMongoUri) {
+      console.error('❌ MONGODB_URI is missing!')
+      return res.status(500).json({ 
+        error: 'Configuration error',
+        message: 'MONGODB_URI environment variable is not set' 
+      })
+    }
+    
+    if (!envCheck.hasApiKey || !envCheck.hasApiSecret) {
+      console.error('❌ Shopify API credentials are missing!')
+      return res.status(500).json({ 
+        error: 'Configuration error',
+        message: 'Shopify API credentials are not set' 
+      })
+    }
     
     // Ensure MongoDB connection
     try {
@@ -242,12 +270,14 @@ app.get('/api/auth', async (req, res) => {
       console.log('✅ MongoDB connection established')
     } catch (dbError) {
       console.error('❌ MongoDB connection failed:', dbError.message)
+      console.error('Error details:', dbError)
       return res.status(500).json({ 
         error: 'Database connection failed',
-        message: dbError.message 
+        message: dbError.message,
+        stack: process.env.NODE_ENV === 'development' ? dbError.stack : undefined
       })
     }
-    
+
     const { code, shop, state } = req.query
 
     if (!code || !shop || !state) {
@@ -262,9 +292,9 @@ app.get('/api/auth', async (req, res) => {
       console.log('✅ Token received successfully')
     } catch (tokenError) {
       console.error('❌ Token exchange failed:', tokenError.message)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Token exchange failed',
-        message: tokenError.message 
+        message: tokenError.message
       })
     }
 
@@ -282,9 +312,9 @@ app.get('/api/auth', async (req, res) => {
       console.log('✅ Shop saved successfully')
     } catch (dbSaveError) {
       console.error('❌ Database save failed:', dbSaveError.message)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Failed to save shop data',
-        message: dbSaveError.message 
+        message: dbSaveError.message
       })
     }
 
@@ -1672,19 +1702,33 @@ INSTRUCTIONS:
 })
 
 // Serve static files - for Vercel, dist is in project root
-app.use(express.static(path.join(__dirname, '..', 'dist')))
-
-// Serve React app for all non-API routes
-app.use((req, res) => {
-  if (!req.path.startsWith('/api') && !req.path.startsWith('/chatbot-widget.js')) {
-    const indexPath = path.join(__dirname, '..', 'dist', 'index.html')
-    res.sendFile(indexPath)
-  } else {
-    res.status(404).json({ error: 'API endpoint not found' })
+// Only serve static files in production, Vercel handles static assets via rewrites
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  try {
+    app.use(express.static(path.join(__dirname, '..', 'dist')))
+  } catch (error) {
+    console.warn('Could not set up static file serving:', error.message)
   }
-})
+}
 
-// Export for Vercel serverless functions
+// Serve React app for all non-API routes (only in dev)
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res) => {
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/chatbot-widget.js')) {
+      try {
+        const indexPath = path.join(__dirname, '..', 'dist', 'index.html')
+        res.sendFile(indexPath)
+      } catch (error) {
+        res.status(404).json({ error: 'File not found' })
+      }
+    } else {
+      res.status(404).json({ error: 'API endpoint not found' })
+    }
+  })
+}
+
+// Export app for Vercel serverless functions
+// Vercel will wrap Express app automatically
 export default app
 
 // For local development, start the server
